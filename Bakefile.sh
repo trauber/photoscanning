@@ -1,5 +1,4 @@
 
-
 task.scan-duplex() {
 
     # assign date name automatically to second granularity. 4 zero padding
@@ -37,14 +36,36 @@ task.calculate-x-offset() {
 task.show-crop-args() {
 cat<<EOT
 
+--------------------------------------------
+
 portrait  4.375x3.5  --  2100x2625+1498+0 
 
 landscape 4.375x3.5  --  2625x2100+1235.5+0
+
+--------------------------------------------
 
 portrait  4.875x3.5  --  2100x2925+1498+0
 
 landscape 4.875x3.5  --  2925x2100+1085.5+0
 
+--------------------------------------------
+
+both      3.5x3.5    --  2100x2100+1498+0
+
+--------------------------------------------
+
+landscape 4x5        --  3000x2400+1048+0
+
+portrait  4x5        --  2400x3000+1348+0
+
+
+--------------------------------------------
+
+landscape 5.875x4    --  3525x2400+785.5+0
+
+portrait  5.875x4    --  2400x3525+1348+0
+
+--------------------------------------------
 EOT
 }
 
@@ -59,6 +80,18 @@ task.batch-crop() {
     done
 }
 
+task.trim-by-percentage() {
+    if [ ! -d "cropped" ] 
+    then
+        mkdir cropped
+    fi
+#convert "$1" -set page '%[fx:w*(1-percentage/100)]x%[fx:h*(1-percentage/100)]-%[fx:w*(percentage/100)/2]-%[fx:h*(percentage/100)/2]' -crop +0+0 cropped/"$1"
+#
+
+    for f in *.jpg; do
+        convert "$f" -set page "%[fx:w*(1-$1/100)]x%[fx:h*(1-$1/100)]-%[fx:w*($1/100)/2]-%[fx:h*($1/100)/2]" -crop +0+0 cropped/"$f"
+    done
+}
 
 task.rotate() {
     # Rotate file $1 by $2 degrees
@@ -74,3 +107,8 @@ task.exif() {
     exiftool -xmp:description="$2" -iptc:keywords="$3" "$1"
 }
 
+task.batch-exif() {
+    for f in *.jpg; do
+        exiftool -xmp:description="$1" -iptc:keywords="$2" "$f"
+    done
+}
